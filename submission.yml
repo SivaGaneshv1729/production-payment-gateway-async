@@ -1,0 +1,26 @@
+version: "1.0"
+
+setup:
+  - command: "npm install"
+    working_directory: "./backend"
+  - command: "npm install"
+    working_directory: "./checkout-page"
+  - command: "npm install"
+    working_directory: "./frontend"
+
+start:
+  - command: "docker-compose up -d --build"
+    timeout: 300
+
+test:
+  - command: "node test_async_flow.js"
+    timeout: 60
+
+verify:
+  - command: "curl -f http://localhost:8000/api/v1/health"
+  - command: "curl -f http://localhost:8000/api/v1/test/jobs/status"
+  - command: "curl -f http://localhost:3000"
+  - command: "curl -f http://localhost:3001/checkout.js"
+
+shutdown:
+  - command: "docker-compose down -v"
