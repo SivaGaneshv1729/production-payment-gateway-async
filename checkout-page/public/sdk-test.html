@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDK Integration Test</title>
+</head>
+<body style="font-family: sans-serif; padding: 20px;">
+    <h1>Merchant Checkout Page</h1>
+    <p>This page simulates a merchant's website integrating the SDK.</p>
+    
+    <button id="pay-button" style="padding: 10px 20px; background: black; color: white; border: none; cursor: pointer;">
+        Pay Now
+    </button>
+    
+    <div id="result" style="margin-top: 20px; padding: 10px; background: #eee; display: none;"></div>
+
+    <!-- Load the SDK from the current server (Checkout Service) -->
+    <script src="checkout.js"></script>
+    
+    <script>
+        document.getElementById('pay-button').addEventListener('click', function() {
+            const checkout = new PaymentGateway({
+                key: 'key_test_abc123', // Test Merchant Key
+                orderId: 'order_' + Math.floor(Math.random() * 100000), // Mock Order ID
+                onSuccess: function(response) {
+                    console.log('Payment successful:', response);
+                    const el = document.getElementById('result');
+                    el.style.display = 'block';
+                    el.style.background = '#dcfce7';
+                    el.style.color = '#166534';
+                    el.innerText = '✅ Payment Successful! ID: ' + (response.paymentId || response.id);
+                },
+                onFailure: function(error) {
+                    console.log('Payment failed:', error);
+                    const el = document.getElementById('result');
+                    el.style.display = 'block';
+                    el.style.background = '#fee2e2';
+                    el.style.color = '#991b1b';
+                    el.innerText = '❌ Payment Failed: ' + (error.description || JSON.stringify(error));
+                }
+            });
+            
+            checkout.open();
+        });
+    </script>
+</body>
+</html>
