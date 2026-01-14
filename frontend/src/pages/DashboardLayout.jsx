@@ -1,8 +1,9 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const DashboardLayout = ({ children, title, subtitle }) => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleLogout = () => {
         localStorage.clear();
@@ -10,32 +11,47 @@ const DashboardLayout = ({ children, title, subtitle }) => {
     };
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', background: '#f3f4f6' }}>
+        <div className="dashboard-layout">
             {/* Sidebar */}
-            <div style={{ width: '250px', background: '#111827', color: 'white', padding: '20px' }}>
-                <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '40px' }}>PayPoint Admin</div>
-                <nav style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    <Link to="/" style={{ color: '#d1d5db', textDecoration: 'none' }}>Overview</Link>
-                    <Link to="/transactions" style={{ color: '#d1d5db', textDecoration: 'none' }}>Transactions</Link>
-                    <Link to="/webhooks" style={{ color: '#d1d5db', textDecoration: 'none' }}>Webhooks</Link>
-                    <Link to="/docs" style={{ color: '#d1d5db', textDecoration: 'none' }}>Integration Guide</Link>
+            <aside className="sidebar">
+                <div className="sidebar-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M2 17L12 22L22 17" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M2 12L12 17L22 12" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    PayPoint Admin
+                </div>
+                <nav>
+                    <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
+                        Overview
+                    </Link>
+                    <Link to="/transactions" className={`nav-link ${location.pathname.includes('/transactions') ? 'active' : ''}`}>
+                        Transactions
+                    </Link>
+                    <Link to="/webhooks" className={`nav-link ${location.pathname.includes('/webhooks') ? 'active' : ''}`}>
+                        Webhooks
+                    </Link>
+                    <Link to="/docs" className={`nav-link ${location.pathname.includes('/docs') ? 'active' : ''}`}>
+                        Integration Guide
+                    </Link>
                 </nav>
                 <button
                     onClick={handleLogout}
-                    style={{ marginTop: 'auto', background: 'transparent', border: '1px solid #374151', color: 'white', padding: '8px', cursor: 'pointer', width: '100%', marginTop: '50px' }}
+                    style={{ marginTop: 'auto', background: 'transparent', border: '1px solid #e5e7eb', color: '#374151', padding: '8px', cursor: 'pointer', width: '100%', borderRadius: '6px' }}
                 >
                     Logout
                 </button>
-            </div>
+            </aside>
 
             {/* Main Content */}
-            <div style={{ flex: 1, padding: '40px' }}>
-                <div style={{ marginBottom: '30px' }}>
-                    <h1 style={{ fontSize: '28px', color: '#111827', margin: 0 }}>{title}</h1>
-                    {subtitle && <p style={{ color: '#6b7280', marginTop: '5px' }}>{subtitle}</p>}
+            <main className="main-content">
+                <div className="page-header">
+                    <h1>{title}</h1>
+                    {subtitle && <div className="welcome-text">{subtitle}</div>}
                 </div>
                 {children}
-            </div>
+            </main>
         </div>
     );
 };

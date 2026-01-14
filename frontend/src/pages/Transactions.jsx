@@ -33,13 +33,13 @@ const Transactions = () => {
                     </thead>
                     <tbody>
                         {payments.length === 0 ? (
-                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px' }}>No transactions yet</td></tr>
+                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>No transactions yet</td></tr>
                         ) : (
                             payments.map(p => (
                                 <tr key={p.id} data-test-id="transaction-row" data-payment-id={p.id}>
                                     <td data-test-id="payment-id" style={{ fontFamily: 'monospace' }}>{p.id}</td>
                                     <td data-test-id="order-id" style={{ fontFamily: 'monospace' }}>{p.order_id}</td>
-                                    <td data-test-id="amount" style={{ fontWeight: 'bold' }}>₹{p.amount / 100}</td>
+                                    <td data-test-id="amount" style={{ fontWeight: '600' }}>₹{p.amount / 100}</td>
                                     <td data-test-id="method" style={{ textTransform: 'capitalize' }}>{p.method}</td>
                                     <td>
                                         <span className={`status-badge status-${p.status}`} data-test-id="status">

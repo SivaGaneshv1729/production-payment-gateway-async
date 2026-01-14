@@ -64,73 +64,70 @@ const Webhooks = () => {
 
     return (
         <DashboardLayout title="Webhooks" subtitle="Manage events and notifications">
-            <div data-test-id="webhook-config" className="card" style={{ padding: '20px', marginBottom: '20px', background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                <h3 style={{ marginBottom: '15px' }}>Configuration</h3>
+            <div className="card" style={{ marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: '#111827' }}>Configuration</h3>
                 <form onSubmit={handleSave}>
-                    <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', marginBottom: '5px' }}>Webhook URL</label>
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>Webhook URL</label>
                         <input
                             data-test-id="webhook-url-input"
                             type="url"
                             value={webhookUrl}
                             onChange={(e) => setWebhookUrl(e.target.value)}
                             placeholder="https://your-site.com/webhook"
-                            style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
                         />
                     </div>
-                    <div style={{ marginBottom: '15px' }}>
-                        <label style={{ display: 'block', marginBottom: '5px' }}>Signing Secret</label>
-                        <div data-test-id="webhook-secret" style={{ background: '#f3f4f6', padding: '10px', borderRadius: '4px', fontFamily: 'monospace' }}>
+                    <div style={{ marginBottom: '20px' }}>
+                        <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>Signing Secret</label>
+                        <div data-test-id="webhook-secret" className="key-box">
                             {secret}
                         </div>
                     </div>
-                    <button type="submit" style={{ padding: '10px 20px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                    <button type="submit" data-test-id="login-button" style={{ width: 'auto', padding: '10px 20px', marginTop: 0 }}>
                         Save Configuration
                     </button>
                 </form>
             </div>
 
-            <div className="card" style={{ padding: '20px', background: 'white', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-                <h3 style={{ marginBottom: '15px' }}>Delivery Logs</h3>
-                <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
-                    <thead>
-                        <tr style={{ borderBottom: '1px solid #eee' }}>
-                            <th style={{ padding: '10px' }}>Event</th>
-                            <th style={{ padding: '10px' }}>Status</th>
-                            <th style={{ padding: '10px' }}>Attempts</th>
-                            <th style={{ padding: '10px' }}>Last Attempt</th>
-                            <th style={{ padding: '10px' }}>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {logs.map(log => (
-                            <tr key={log.id} style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: '10px' }}>{log.event}</td>
-                                <td style={{ padding: '10px' }}>
-                                    <span style={{
-                                        padding: '2px 8px', borderRadius: '10px', fontSize: '12px',
-                                        background: log.status === 'success' ? '#dcfce7' : '#fee2e2',
-                                        color: log.status === 'success' ? '#166534' : '#991b1b'
-                                    }}>
-                                        {log.status}
-                                    </span>
-                                </td>
-                                <td style={{ padding: '10px' }}>{log.attempts}</td>
-                                <td style={{ padding: '10px' }}>{new Date(log.last_attempt_at).toLocaleString()}</td>
-                                <td style={{ padding: '10px' }}>
-                                    {log.status !== 'success' && (
-                                        <button
-                                            onClick={() => handleRetry(log.id)}
-                                            style={{ padding: '5px 10px', fontSize: '12px', cursor: 'pointer' }}
-                                        >
-                                            Retry
-                                        </button>
-                                    )}
-                                </td>
+            <div className="card">
+                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: '#111827' }}>Delivery Logs</h3>
+                <div className="table-container" style={{ borderRadius: '0', borderWidth: '1px 0 0 0', boxShadow: 'none' }}>
+                    <table style={{ border: 'none' }}>
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Status</th>
+                                <th>Attempts</th>
+                                <th>Last Attempt</th>
+                                <th>Action</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {logs.map(log => (
+                                <tr key={log.id}>
+                                    <td>{log.event}</td>
+                                    <td>
+                                        <span className={`status-badge status-${log.status}`}>
+                                            {log.status}
+                                        </span>
+                                    </td>
+                                    <td>{log.attempts}</td>
+                                    <td>{new Date(log.last_attempt_at).toLocaleString()}</td>
+                                    <td>
+                                        {log.status !== 'success' && (
+                                            <button
+                                                onClick={() => handleRetry(log.id)}
+                                                style={{ padding: '6px 12px', fontSize: '13px', cursor: 'pointer', background: 'white', border: '1px solid #d1d5db', borderRadius: '4px', color: '#374151' }}
+                                            >
+                                                Retry
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </DashboardLayout>
     );
