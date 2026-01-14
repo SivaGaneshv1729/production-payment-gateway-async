@@ -23,17 +23,11 @@ const DashboardLayout = ({ children, title, subtitle }) => {
                     PayPoint Admin
                 </div>
                 <nav>
-                    <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
+                    <Link to="/dashboard" className={`nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}>
                         Overview
                     </Link>
-                    <Link to="/transactions" className={`nav-link ${location.pathname.includes('/transactions') ? 'active' : ''}`}>
+                    <Link to="/dashboard/transactions" className={`nav-link ${location.pathname.includes('/transactions') ? 'active' : ''}`}>
                         Transactions
-                    </Link>
-                    <Link to="/webhooks" className={`nav-link ${location.pathname.includes('/webhooks') ? 'active' : ''}`}>
-                        Webhooks
-                    </Link>
-                    <Link to="/docs" className={`nav-link ${location.pathname.includes('/docs') ? 'active' : ''}`}>
-                        Integration Guide
                     </Link>
                 </nav>
                 <button

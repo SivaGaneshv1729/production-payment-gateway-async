@@ -83,21 +83,47 @@ const Checkout = () => {
         }
     };
 
-    if (!orderId) return <div style={{ padding: '20px' }}>Missing Order ID</div>;
-    if (!order) return <div style={{ padding: '20px' }}>Loading Order...</div>;
+    const Container = ({ children }) => {
+        const style = isEmbedded ? { padding: '0', boxShadow: 'none', border: 'none', maxWidth: '100%' } : {};
+        return (
+            <div data-test-id="checkout-container" style={style}>
+                {!isEmbedded && (
+                    <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                        <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#4f46e5' }}>PayPoint</h2>
+                    </div>
+                )}
+                {children}
+            </div>
+        );
+    };
 
-    // If embedded, hide the header/logo to look cleaner in iframe
-    // Note: CSS handles container width/style via data-test-id="checkout-container"
-    const containerStyle = isEmbedded ? { padding: '0', boxShadow: 'none', border: 'none', maxWidth: '100%' } : {};
+    if (!orderId) return (
+        <Container>
+            <div className="state-container">
+                <div style={{ color: '#ef4444', marginBottom: '16px' }}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </div>
+                <h3>Missing Order ID</h3>
+                <p style={{ color: '#6b7280' }}>Invalid checkout URL</p>
+            </div>
+        </Container>
+    );
+
+    if (!order) return (
+        <Container>
+            <div className="state-container">
+                <div className="spinner"></div>
+                <p style={{ color: '#6b7280', fontWeight: '500' }}>Loading Order...</p>
+            </div>
+        </Container>
+    );
 
     return (
-        <div data-test-id="checkout-container" style={containerStyle}>
-            {!isEmbedded && (
-                <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                    <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#4f46e5' }}>PayPoint</h2>
-                </div>
-            )}
-
+        <Container>
             <div data-test-id="order-summary" className="order-summary-box">
                 <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>Payable Amount</p>
                 <h1 data-test-id="order-amount" style={{ fontSize: '32px', fontWeight: '800', lineHeight: '1', margin: '0' }}>
@@ -194,7 +220,7 @@ const Checkout = () => {
                     <button onClick={() => setStatus('initial')} style={{ maxWidth: '200px', margin: '20px auto 0' }}>Try Again</button>
                 </div>
             )}
-        </div>
+        </Container>
     );
 };
 
