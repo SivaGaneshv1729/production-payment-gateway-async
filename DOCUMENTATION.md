@@ -8,57 +8,61 @@ The system uses PostgreSQL with the following relational schema:
 erDiagram
     MERCHANT ||--o{ ORDER : creates
     MERCHANT ||--o{ PAYMENT : receives
+    MERCHANT ||--o{ WEBHOOK_LOG : logs
+    MERCHANT ||--o{ REFUND : processes
     ORDER ||--o{ PAYMENT : has
+    PAYMENT ||--o{ REFUND : has
     MERCHANT {
         uuid id
         string email
         string api_key
         string api_secret
+        string webhook_url
+        string webhook_secret
     }
     ORDER {
         string id
         int amount
-        string currency
         string status
     }
     PAYMENT {
         string id
         int amount
         string status
+        boolean captured
         string method
-        string card_network
+    }
+    REFUND {
+        string id
+        int amount
+        string status
+    }
+    WEBHOOK_LOG {
+        uuid id
+        string event
+        string status
+        int attempts
     }
 ```
 
 ### **Merchants Table**
-Stores merchant credentials and authentication details.
-- `id` (UUID, PK): Unique identifier.
-- `name` (String): Merchant name.
-- `email` (String, Unique): Login email.
-- `api_key` (String, Unique): Public key for API auth.
-- `api_secret` (String): Private key for API auth.
-- `is_active` (Boolean): Account status.
+- `webhook_url` (Text): URL for event notifications.
+- `webhook_secret` (String): Secret for HMAC signature.
 
-### **Orders Table**
-Represents a payment request created by a merchant.
-- `id` (String, PK): Format `order_XXXXXXXXXXXXXXXX`.
-- `merchant_id` (UUID, FK): Links to Merchants.
-- `amount` (Integer): Amount in paise (e.g., 50000 = ₹500).
-- `currency` (String): Default 'INR'.
-- `status` (String): `created` | `paid`.
-- `receipt` (String): Merchant's internal reference.
+### **Refunds Table**
+- `id`: `rfnd_` prefix.
+- `payment_id`: Associated payment.
+- `status`: `pending`, `processed`.
 
-### **Payments Table**
-Represents a transaction attempt for an order.
-- `id` (String, PK): Format `pay_XXXXXXXXXXXXXXXX`.
-- `order_id` (String, FK): Links to Orders.
-- `merchant_id` (UUID, FK): Links to Merchants.
-- `amount` (Integer): Transaction amount.
-- `method` (String): `upi` | `card`.
-- `status` (String): `processing` -> `success` / `failed`.
-- `vpa` (String): Stored only for UPI.
-- `card_network` (String): Visa/Mastercard (for Cards).
-- `card_last4` (String): Last 4 digits (for Cards).
+### **Webhook Logs Table**
+- `event`: `payment.success`, `refund.processed`, etc.
+- `status`: `pending`, `success`, `failed`.
+- `next_retry_at`: Scheduled retry time.
+
+### **Idempotency Keys Table**
+- `key`: Unique client-provided key.
+- `response`: Cached API response.
+- `expires_at`: 24h expiration.
 
 ---
 
@@ -104,21 +108,88 @@ Represents a transaction attempt for an order.
 - **Auth:** None (Used by Checkout Page)
 - **Response:** Order details required for rendering checkout.
 
-### **3. Initiate Payment**
+### **3. Initiate Payment (Async)**
 - **POST** `/api/v1/payments/public`
-- **Auth:** None
-- **Body:**
-  ```json
-  {
-      "order_id": "order_12345678",
-      "method": "upi",
-      "vpa": "user@okicici"
-  }
-  ```
-- **Response (201 Created):**
+- **Response:**
   ```json
   {
       "id": "pay_98765432",
-      "status": "processing"
+      "status": "pending"
   }
   ```
+- **Note:** Status is `pending`. Processing happens in background via Job Queue.
+
+### **4. Payments Capture & Refund**
+
+#### **Capture Payment**
+- **POST** `/api/v1/payments/:id/capture`
+- **Body:** `{ "amount": 50000 }`
+- **Response:** Updated payment object.
+
+#### **Create Refund**
+- **POST** `/api/v1/payments/:id/refunds`
+- **Body:** `{ "amount": 5000, "reason": "requested" }`
+- **Response:** Refund object with status `pending`.
+
+#### **Get Refund Status**
+- **GET** `/api/v1/refunds/:id`
+
+### **5. Webhook Management**
+
+- **GET** `/api/v1/webhooks`: List webhook delivery logs.
+- **POST** `/api/v1/webhooks/:id/retry`: Manually retry a failed webhook.
+- **POST** `/api/v1/merchants/webhook-config`: Update webhook URL.
+
+---
+
+## 3. Webhook Integration
+
+Failures are retried 5 times with exponential backoff.
+
+**Events:** `payment.success`, `payment.failed`, `refund.processed`.
+
+**Payload Format:**
+```json
+{
+  "event": "payment.success",
+  "timestamp": 1705315870,
+  "data": {
+    "payment": {
+      "id": "pay_H8sK3jD9s2L1pQr",
+      "status": "success",
+      "amount": 50000,
+      ...
+    }
+  }
+}
+```
+
+**Signature Verification:**
+Verify `X-Webhook-Signature` header using HMAC-SHA256 with your `webhook_secret`.
+
+---
+
+## 4. SDK Integration
+
+Embed the checkout widget in your website using our Javascript SDK.
+
+1. **Include the Script:**
+   ```html
+   <script src="http://localhost:3001/checkout.js"></script>
+   ```
+
+2. **Initialize & Open:**
+   ```javascript
+   const checkout = new PaymentGateway({
+     key: 'key_test_abc123',
+     orderId: 'order_12345678',
+     onSuccess: (response) => {
+       console.log("Payment Success:", response.paymentId);
+     },
+     onFailure: (error) => {
+       console.error("Payment Failed:", error);
+     }
+   });
+   
+   checkout.open();
+   ```

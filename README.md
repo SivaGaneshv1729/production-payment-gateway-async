@@ -21,32 +21,41 @@ The project simulates real-world banking delays, success/failure rates, and stri
 ## 🛠️ Tech Stack
 
 *   **Backend:** Node.js, Express.js
+*   **Async Processing:** Redis, Bull (Message Queue)
 *   **Database:** PostgreSQL
 *   **Frontend (Dashboard & Checkout):** React.js, Vite
+*   **SDK:** Vanilla JS (Webpack bundled)
 *   **Infrastructure:** Docker, Docker Compose
-*   **Testing:** Jest (logic), Custom Automated Script (End-to-End)
 
 ---
 
 ## 📂 System Architecture & Ports
 
-The system comprises four micro-services orchestrated by Docker Compose:
+The system comprises five micro-services/components orchestrated by Docker Compose:
 
 ```mermaid
 graph TD
     User[User] -->|Browser| Checkout[Checkout Page :3001]
+    User -->|Browser| SDK[Embeddable SDK]
+    SDK -->|Iframe| Checkout
     Merchant[Merchant] -->|Browser| Dashboard[Dashboard :3000]
     Checkout -->|HTTP| API[Backend API :8000]
     Dashboard -->|HTTP| API
     API -->|SQL| DB[(PostgreSQL :5432)]
+    API -->|Job| Redis[(Redis :6379)]
+    Worker[Worker Service] -->|Consume| Redis
+    Worker -->|Update| DB
+    Worker -->|Webhook| External[Merchant Server]
 ```
 
 | Service | Container Name | Port | Description |
 | --- | --- | --- | --- |
 | **API** | `gateway_api` | **8000** | Core business logic, validation, and DB interactions. |
-| **Database** | `pg_gateway` | **5432** | PostgreSQL database for Merchants, Orders, and Payments. |
-| **Dashboard** | `gateway_dashboard` | **3000** | Merchant UI to view stats and transactions. |
-| **Checkout** | `gateway_checkout` | **3001** | Public-facing payment page for customers. |
+| **Worker** | `gateway_worker` | **-** | Background job processor for Payments, Webhooks, Refunds. |
+| **Redis** | `redis_gateway` | **6379** | Message broker for async jobs. |
+| **Database** | `pg_gateway` | **5432** | PostgreSQL database. |
+| **Dashboard** | `gateway_dashboard` | **3000** | Merchant UI (Webhooks, Transactions). |
+| **Checkout** | `gateway_checkout` | **3001** | Payment page & SDK host. |
 
 ---
 
@@ -195,24 +204,26 @@ To enable deterministic testing (bypassing random failures and long delays), set
 
 ---
 
-## 🗂 Project Structure
-
-```text
 payment-gateway/
 ├── backend/
-│   ├── src/server.js       # Main API logic
+│   ├── src/
+│   │   ├── server.js       # Main API logic
+│   │   ├── worker.js       # Background Worker (Redis Consumer)
+│   │   └── queue.js        # Bull Queue Configuration
 │   └── Dockerfile
 ├── frontend/               # Merchant Dashboard
-│   ├── src/pages/          # Login, Dashboard, Transactions
-│   ├── src/components/     # DashboardLayout
+│   ├── src/pages/          # Webhooks, Login, Dashboard
 │   └── Dockerfile
-├── checkout-page/          # Customer Checkout UI
-│   ├── src/pages/          # Checkout Form
+├── checkout-page/          # Customer Checkout UI (Host for SDK)
+│   ├── public/checkout.js  # Compiled SDK (Copied)
 │   └── Dockerfile
-├── docker-compose.yml      # Service Orchestration
-├── test_full_flow.js       # Automated E2E Test Script
+├── checkout-widget/        # Embeddable SDK Source
+│   ├── src/sdk/            # PaymentGateway Class
+│   └── webpack.config.js
+├── docker-compose.yml      # Service Orchestration (API, Worker, Redis, DB)
+├── test_async_flow.js      # Async E2E Test Script
 └── README.md
-```
+
 
 ## 📸 Screenshots
 
