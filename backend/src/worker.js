@@ -47,17 +47,22 @@ paymentQueue.process(async (job) => {
         );
 
         // Trigger Webhook
+        const eventType = isSuccess ? 'payment.success' : 'payment.failed';
         await webhookQueue.add({
             merchant_id: payment.merchant_id,
-            event: isSuccess ? 'payment.success' : 'payment.failed',
+            event: eventType,
             payload: {
-                payment: {
-                    id: payment.id,
-                    order_id: payment.order_id,
-                    amount: payment.amount,
-                    currency: payment.currency,
-                    status: status,
-                    method: payment.method
+                event: eventType,
+                timestamp: Math.floor(Date.now() / 1000),
+                data: {
+                    payment: {
+                        id: payment.id,
+                        order_id: payment.order_id,
+                        amount: payment.amount,
+                        currency: payment.currency,
+                        status: status,
+                        method: payment.method
+                    }
                 }
             }
         });
@@ -158,15 +163,20 @@ refundQueue.process(async (job) => {
         );
 
         // Trigger Webhook
+        const eventType = 'refund.processed';
         await webhookQueue.add({
             merchant_id: refund.merchant_id,
-            event: 'refund.processed',
+            event: eventType,
             payload: {
-                refund: {
-                    id: refund.id,
-                    payment_id: refund.payment_id,
-                    amount: refund.amount,
-                    status: 'processed'
+                event: eventType,
+                timestamp: Math.floor(Date.now() / 1000),
+                data: {
+                    refund: {
+                        id: refund.id,
+                        payment_id: refund.payment_id,
+                        amount: refund.amount,
+                        status: 'processed'
+                    }
                 }
             }
         });
