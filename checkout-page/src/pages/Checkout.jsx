@@ -83,74 +83,115 @@ const Checkout = () => {
         }
     };
 
-    if (!orderId) return <div>Missing Order ID</div>;
-    if (!order) return <div>Loading Order...</div>;
+    if (!orderId) return <div style={{ padding: '20px' }}>Missing Order ID</div>;
+    if (!order) return <div style={{ padding: '20px' }}>Loading Order...</div>;
 
     // If embedded, hide the header/logo to look cleaner in iframe
-    const containerStyle = isEmbedded ? { padding: '20px' } : { padding: '40px', maxWidth: '480px', margin: '0 auto' };
+    // Note: CSS handles container width/style via data-test-id="checkout-container"
+    const containerStyle = isEmbedded ? { padding: '0', boxShadow: 'none', border: 'none', maxWidth: '100%' } : {};
 
     return (
         <div data-test-id="checkout-container" style={containerStyle}>
             {!isEmbedded && (
                 <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                    <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>PayPoint</h2>
+                    <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#4f46e5' }}>PayPoint</h2>
                 </div>
             )}
 
             <div data-test-id="order-summary" className="order-summary-box">
-                <p style={{ color: '#6b7280', fontSize: '14px' }}>Payable Amount</p>
-                <h1 data-test-id="order-amount" style={{ fontSize: '32px', fontWeight: 'bold', margin: '10px 0' }}>
+                <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>Payable Amount</p>
+                <h1 data-test-id="order-amount" style={{ fontSize: '32px', fontWeight: '800', lineHeight: '1', margin: '0' }}>
                     ₹{order.amount / 100}
                 </h1>
-                <div style={{ fontSize: '12px', color: '#9ca3af' }}>Order: {order.id}</div>
+                <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '12px', fontFamily: 'monospace' }}>Order: {order.id}</div>
             </div>
 
             {status === 'initial' && (
                 <>
-                    <div data-test-id="payment-methods" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-                        <button data-test-id="method-upi" onClick={() => setMethod('upi')} style={{ flex: 1, padding: '10px' }}>UPI</button>
-                        <button data-test-id="method-card" onClick={() => setMethod('card')} style={{ flex: 1, padding: '10px' }}>Card</button>
+                    <div data-test-id="payment-methods" className="method-toggle">
+                        <button
+                            data-test-id="method-upi"
+                            onClick={() => setMethod('upi')}
+                            className={`method-btn ${method === 'upi' ? 'active' : ''}`}
+                        >
+                            UPI
+                        </button>
+                        <button
+                            data-test-id="method-card"
+                            onClick={() => setMethod('card')}
+                            className={`method-btn ${method === 'card' ? 'active' : ''}`}
+                        >
+                            Card
+                        </button>
                     </div>
 
                     {method === 'upi' && (
                         <form data-test-id="upi-form" onSubmit={(e) => handlePayment(e, 'upi')}>
-                            <input data-test-id="vpa-input" placeholder="user@bank" required style={{ width: '100%', padding: '10px', marginBottom: '10px' }} />
-                            <button data-test-id="pay-button" type="submit" style={{ width: '100%', padding: '12px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '4px' }}>Pay Now</button>
+                            <div className="form-group">
+                                <label>UPI ID</label>
+                                <input data-test-id="vpa-input" placeholder="user@bank" required />
+                            </div>
+                            <button data-test-id="pay-button" type="submit">Pay Now</button>
                         </form>
                     )}
 
                     {method === 'card' && (
                         <form data-test-id="card-form" onSubmit={(e) => handlePayment(e, 'card')}>
-                            <input data-test-id="card-number-input" placeholder="Card Number" required style={{ width: '100%', padding: '10px', marginBottom: '10px' }} />
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                                <input data-test-id="expiry-input" placeholder="MM/YY" required style={{ flex: 1, padding: '10px', marginBottom: '10px' }} />
-                                <input data-test-id="cvv-input" placeholder="CVV" required style={{ flex: 1, padding: '10px', marginBottom: '10px' }} />
+                            <div className="form-group">
+                                <label>Card Number</label>
+                                <input data-test-id="card-number-input" placeholder="0000 0000 0000 0000" required />
                             </div>
-                            <input data-test-id="cardholder-name-input" placeholder="Cardholder Name" required style={{ width: '100%', padding: '10px', marginBottom: '10px' }} />
-                            <button data-test-id="pay-button" type="submit" style={{ width: '100%', padding: '12px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '4px' }}>Pay Now</button>
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                                <div style={{ flex: 1 }}>
+                                    <label>Expiry</label>
+                                    <input data-test-id="expiry-input" placeholder="MM/YY" required />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <label>CVV</label>
+                                    <input data-test-id="cvv-input" placeholder="123" required />
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label>Cardholder Name</label>
+                                <input data-test-id="cardholder-name-input" placeholder="Name on Card" required />
+                            </div>
+                            <button data-test-id="pay-button" type="submit">Pay Now</button>
                         </form>
                     )}
                 </>
             )}
 
             {status === 'processing' && (
-                <div data-test-id="processing-state" style={{ textAlign: 'center', padding: '40px' }}>
-                    <div className="spinner" style={{ margin: '0 auto 20px' }}></div>
-                    <p>Processing Payment...</p>
+                <div data-test-id="processing-state" className="state-container">
+                    <div className="spinner"></div>
+                    <p style={{ color: '#6b7280', fontWeight: '500' }}>Processing Payment...</p>
                 </div>
             )}
 
             {status === 'success' && (
-                <div data-test-id="success-state" style={{ textAlign: 'center', padding: '40px', color: 'green' }}>
-                    <h2>Payment Successful!</h2>
-                    <p>ID: {payId}</p>
+                <div data-test-id="success-state" className="state-container">
+                    <div style={{ color: '#10b981', marginBottom: '16px' }}>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </div>
+                    <h2 style={{ fontSize: '20px', marginBottom: '8px' }}>Payment Successful!</h2>
+                    <p style={{ color: '#6b7280', fontSize: '14px', fontFamily: 'monospace' }}>ID: {payId}</p>
                 </div>
             )}
 
             {status === 'failed' && (
-                <div data-test-id="error-state" style={{ textAlign: 'center', padding: '40px', color: 'red' }}>
-                    <h2>Payment Failed</h2>
-                    <button onClick={() => setStatus('initial')} style={{ marginTop: '20px', padding: '10px 20px' }}>Try Again</button>
+                <div data-test-id="error-state" className="state-container">
+                    <div style={{ color: '#ef4444', marginBottom: '16px' }}>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="15" y1="9" x2="9" y2="15"></line>
+                            <line x1="9" y1="9" x2="15" y2="15"></line>
+                        </svg>
+                    </div>
+                    <h2 style={{ fontSize: '20px', marginBottom: '8px' }}>Payment Failed</h2>
+                    <button onClick={() => setStatus('initial')} style={{ maxWidth: '200px', margin: '20px auto 0' }}>Try Again</button>
                 </div>
             )}
         </div>

@@ -1,9 +1,7 @@
 :root {
     --primary: #4f46e5;
-    /* Matches frontend primary */
     --primary-hover: #4338ca;
     --bg-page: #eff6ff;
-    /* Matches frontend bg */
     --card-bg: #ffffff;
     --text-main: #111827;
     --text-muted: #6b7280;
@@ -11,7 +9,6 @@
     --success: #10b981;
     --error: #ef4444;
     --radius: 12px;
-    /* Slightly more rounded for modern feel */
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --input-bg: #f9fafb;
 }
@@ -31,43 +28,32 @@ body {
 
 #root {
     width: 100%;
-    max-width: 100%;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
+    /* Allow full width for dashboard routes */
+    height: 100vh;
+    /* Ensure height fits viewport */
 }
 
-/* --- Card Containers --- */
+/* --- Card Containers (for Checkout/Login) --- */
 [data-test-id="checkout-container"],
-[data-test-id="login-form"],
-[data-test-id="dashboard"] {
+[data-test-id="login-form"] {
     background: var(--card-bg);
     padding: 40px;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     width: 100%;
     max-width: 480px;
-    /* Clean, focused width */
     margin: 0 auto;
     border: 1px solid var(--border);
 }
 
-/* Wider dashboard */
-[data-test-id="dashboard"] {
-    max-width: 1000px;
-}
-
-h2,
-h1 {
-    color: var(--text-main);
-    margin-top: 0;
-    font-weight: 800;
-    font-size: 24px;
-    margin-bottom: 24px;
-    letter-spacing: -0.025em;
-}
-
 /* --- Typography --- */
+h1,
+h2,
+h3 {
+    margin: 0 0 16px 0;
+    color: var(--text-main);
+}
+
 label {
     display: block;
     font-size: 14px;
@@ -97,10 +83,6 @@ input:focus {
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
-input::placeholder {
-    color: #9ca3af;
-}
-
 /* --- Buttons --- */
 button {
     background-color: var(--primary);
@@ -114,98 +96,46 @@ button {
     width: 100%;
     transition: all 0.2s ease;
     margin-top: 10px;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 button:hover {
     background-color: var(--primary-hover);
-    transform: translateY(-1px);
 }
 
-button:active {
-    transform: translateY(0);
-}
-
-/* --- Payment Methods Toggle --- */
-[data-test-id="payment-methods"] {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 24px;
-}
-
-[data-test-id="payment-methods"] button {
-    background-color: white;
-    color: var(--text-muted);
-    border: 1px solid var(--border);
-    margin-top: 0;
-    box-shadow: none;
-}
-
-[data-test-id="payment-methods"] button:hover {
-    border-color: var(--text-muted);
-    background-color: #f9fafb;
-    color: var(--text-main);
-}
-
-/* Active State Simulation (Logic in React handles class, but default focus style helps) */
-[data-test-id="payment-methods"] button:focus {
-    border-color: var(--primary);
-    color: var(--primary);
-    background-color: #eef2ff;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-}
-
-
-/* --- Order Summary --- */
-[data-test-id="order-summary"] {
+/* --- Order Summary (Checkout) --- */
+.order-summary-box {
     background-color: #f8fafc;
     padding: 20px;
     border-radius: 12px;
     margin-bottom: 24px;
     border: 1px dashed var(--border);
+    text-align: center;
 }
 
-[data-test-id="order-summary"] h2 {
-    font-size: 16px;
-    color: var(--text-muted);
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-[data-test-id="order-summary"] div {
+/* --- Payment Method Toggles --- */
+.method-toggle {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    font-size: 14px;
+    gap: 12px;
+    margin-bottom: 24px;
 }
 
-[data-test-id="order-summary"] div:last-child {
-    margin-bottom: 0;
-    padding-top: 8px;
-    border-top: 1px solid #e2e8f0;
-}
-
-[data-test-id="order-amount"] {
-    font-size: 24px;
-    font-weight: 800;
-    color: var(--text-main);
-}
-
-[data-test-id="order-id"] {
-    font-family: 'Monaco', monospace;
-    font-size: 13px;
+.method-btn {
+    flex: 1;
+    background-color: white;
     color: var(--text-muted);
-    background: #e2e8f0;
-    padding: 2px 6px;
-    border-radius: 4px;
+    border: 1px solid var(--border);
+    margin-top: 0;
+}
+
+.method-btn.active {
+    border-color: var(--primary);
+    color: var(--primary);
+    background-color: #eef2ff;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
 }
 
 /* --- States --- */
-[data-test-id="processing-state"],
-[data-test-id="success-state"],
-[data-test-id="error-state"] {
+.state-container {
     text-align: center;
     padding: 20px 0;
 }
@@ -230,73 +160,6 @@ button:active {
     }
 }
 
-[data-test-id="processing-message"] {
-    color: var(--text-muted);
-    font-weight: 500;
-}
-
-[data-test-id="success-message"] {
-    color: var(--success);
-    font-weight: 600;
-    display: block;
-    margin-top: 8px;
-}
-
-[data-test-id="error-message"] {
-    color: var(--error);
-    font-weight: 600;
-    display: block;
-    margin-bottom: 16px;
-}
-
-[data-test-id="payment-id"] {
-    font-family: monospace;
-    background: #f1f5f9;
-    padding: 2px 6px;
-    border-radius: 4px;
-}
-
-/* --- Dashboard Elements in Checkout App --- */
-/* (Reusing styles from frontend for consistency) */
-[data-test-id="api-credentials"] {
-    background: #f8fafc;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    margin-bottom: 24px;
-}
-
-[data-test-id="stats-container"] {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-[data-test-id="stats-container"]>div {
-    background: white;
-    padding: 16px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    text-align: center;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 16px;
-}
-
-th,
-td {
-    padding: 12px;
-    border-bottom: 1px solid var(--border);
-    text-align: left;
-    font-size: 14px;
-}
-
-th {
-    background: #f9fafb;
-    font-weight: 600;
-    color: var(--text-muted);
-}
+/* --- Shared Dashboard Styles (copied from frontend/src/index.css) --- */
+/* If these routes are hit, we want them to look okay, though Checkout is main focus */
+/* (We can't easily auto-import, so we define basic structure here) */

@@ -1,60 +1,59 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import DashboardLayout from './DashboardLayout';
 
 const Transactions = () => {
-    const [transactions, setTransactions] = useState([]);
+    const [payments, setPayments] = useState([]);
+    const apiKey = localStorage.getItem('x-api-key');
+    const apiSecret = localStorage.getItem('x-api-secret');
 
     useEffect(() => {
-        // Fetch real transactions from your API
         fetch('http://localhost:8000/api/v1/payments', {
-            headers: {
-                'X-Api-Key': 'key_test_abc123',
-                'X-Api-Secret': 'secret_test_xyz789'
-            }
+            headers: { 'X-Api-Key': apiKey, 'X-Api-Secret': apiSecret }
         })
             .then(res => res.json())
             .then(data => {
-                if (Array.isArray(data)) setTransactions(data);
-                else console.error("Expected array, got:", data);
+                if (Array.isArray(data)) setPayments(data);
             })
-            .catch(err => console.error("Error fetching transactions:", err));
+            .catch(console.error);
     }, []);
 
     return (
-        <div style={{ padding: '20px' }}>
-            <h1>Transaction History</h1>
-            <Link to="/dashboard">Back to Dashboard</Link>
-
-            <table data-test-id="transactions-table" style={{ width: '100%', marginTop: '20px', borderCollapse: 'collapse' }}>
-                <thead>
-                    <tr style={{ textAlign: 'left', backgroundColor: '#eee' }}>
-                        <th>Payment ID</th>
-                        <th>Order ID</th>
-                        <th>Amount</th>
-                        <th>Method</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {transactions.map((txn) => (
-                        <tr
-                            key={txn.id}
-                            data-test-id="transaction-row"
-                            data-payment-id={txn.id}
-                            style={{ borderBottom: '1px solid #ddd' }}
-                        >
-                            <td data-test-id="payment-id">{txn.id}</td>
-                            <td data-test-id="order-id">{txn.order_id}</td>
-                            <td data-test-id="amount">{txn.amount}</td>
-                            <td data-test-id="method">{txn.method}</td>
-                            <td data-test-id="status">{txn.status}</td>
-                            <td data-test-id="created-at">{txn.created_at}</td>
+        <DashboardLayout title="Transactions" subtitle="View all your payment activities">
+            <div className="table-container">
+                <table data-test-id="transactions-table">
+                    <thead>
+                        <tr>
+                            <th>Payment ID</th>
+                            <th>Order ID</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                            <th>Date</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        {payments.length === 0 ? (
+                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>No transactions yet</td></tr>
+                        ) : (
+                            payments.map(p => (
+                                <tr key={p.id} data-test-id="transaction-row" data-payment-id={p.id}>
+                                    <td data-test-id="payment-id" style={{ fontFamily: 'monospace' }}>{p.id}</td>
+                                    <td data-test-id="order-id" style={{ fontFamily: 'monospace' }}>{p.order_id}</td>
+                                    <td data-test-id="amount" style={{ fontWeight: '600' }}>₹{p.amount / 100}</td>
+                                    <td data-test-id="method" style={{ textTransform: 'capitalize' }}>{p.method}</td>
+                                    <td>
+                                        <span className={`status-badge status-${p.status}`} data-test-id="status">
+                                            {p.status}
+                                        </span>
+                                    </td>
+                                    <td data-test-id="created-at">{new Date(p.created_at).toLocaleDateString()}</td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </DashboardLayout>
     );
 };
 
