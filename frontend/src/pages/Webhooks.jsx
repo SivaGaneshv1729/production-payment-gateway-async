@@ -31,9 +31,26 @@ const Webhooks = () => {
 
     const handleSave = async (e) => {
         e.preventDefault();
-        // NOTE: You need to implement this endpoint in backend if you want it to persist
-        // For now, we just simulate the UI action
-        alert("Configuration Saved (Simulation)");
+        try {
+            const res = await fetch('http://localhost:8000/api/v1/merchants/webhook-config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Api-Key': apiKey,
+                    'X-Api-Secret': apiSecret
+                },
+                body: JSON.stringify({ webhook_url: webhookUrl })
+            });
+
+            if (res.ok) {
+                alert("Configuration Saved!");
+            } else {
+                alert("Failed to save configuration");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error saving configuration");
+        }
     };
 
     const handleRetry = async (logId) => {
