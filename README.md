@@ -204,6 +204,9 @@ To enable deterministic testing (bypassing random failures and long delays), set
 
 ---
 
+## 📂 Project Structure
+
+```text
 payment-gateway/
 ├── backend/
 │   ├── src/
@@ -223,6 +226,7 @@ payment-gateway/
 ├── docker-compose.yml      # Service Orchestration (API, Worker, Redis, DB)
 ├── test_async_flow.js      # Async E2E Test Script
 └── README.md
+```
 
 
 
