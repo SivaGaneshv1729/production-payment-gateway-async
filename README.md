@@ -1,5 +1,5 @@
 
-# Payment Gateway with Multi-Method Processing and Hosted Checkout
+# Payment Gateway Application with Async Processing
 
 A full-stack payment gateway simulation similar to Razorpay or Stripe. This system allows merchants to onboard, generate payment orders via API, and enables customers to make payments using UPI or Credit/Debit Cards through a hosted checkout page.
 
