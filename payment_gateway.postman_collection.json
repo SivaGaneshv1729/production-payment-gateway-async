@@ -1,0 +1,219 @@
+{
+    "info": {
+        "_postman_id": "payment-gateway-collection",
+        "name": "Payment Gateway API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8000",
+            "type": "string"
+        },
+        {
+            "key": "apiKey",
+            "value": "key_test_abc123",
+            "type": "string"
+        },
+        {
+            "key": "apiSecret",
+            "value": "secret_test_xyz789",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "1. Health Check",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/health",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "health"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "2. Get Test Merchant",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/v1/test/merchant",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "test",
+                        "merchant"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "3. Create Order",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "var jsonData = pm.response.json();",
+                            "pm.environment.set(\"orderId\", jsonData.id);",
+                            "console.log(\"Order ID set to:\", jsonData.id);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "x-api-key",
+                        "value": "{{apiKey}}",
+                        "type": "text"
+                    },
+                    {
+                        "key": "x-api-secret",
+                        "value": "{{apiSecret}}",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"amount\": 50000,\n    \"currency\": \"INR\",\n    \"receipt\": \"receipt_postman_1\",\n    \"notes\": {\n        \"desc\": \"Test Order via Postman\"\n    }\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/v1/orders",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "orders"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "4. Create Payment (Public/Card)",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "var jsonData = pm.response.json();",
+                            "pm.environment.set(\"paymentId\", jsonData.id);",
+                            "console.log(\"Payment ID set to:\", jsonData.id);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"order_id\": \"{{orderId}}\",\n    \"method\": \"card\",\n    \"card\": {\n        \"number\": \"4242424242424242\",\n        \"expiry_month\": \"12\",\n        \"expiry_year\": \"2025\",\n        \"cvv\": \"123\",\n        \"holder_name\": \"Postman User\"\n    }\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/v1/payments/public",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "payments",
+                        "public"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "5. Get Payment Status (Public)",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/v1/payments/{{paymentId}}/public",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "payments",
+                        "{{paymentId}}",
+                        "public"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "6. Initiate Refund",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "x-api-key",
+                        "value": "{{apiKey}}",
+                        "type": "text"
+                    },
+                    {
+                        "key": "x-api-secret",
+                        "value": "{{apiSecret}}",
+                        "type": "text"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"amount\": 1000,\n    \"reason\": \"Customer requested refund via Postman\"\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/v1/payments/{{paymentId}}/refunds",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "api",
+                        "v1",
+                        "payments",
+                        "{{paymentId}}",
+                        "refunds"
+                    ]
+                }
+            },
+            "response": []
+        }
+    ]
+}
