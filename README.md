@@ -225,6 +225,84 @@ payment-gateway/
 └── README.md
 
 
+
+---
+
+## 💻 SDK Integration Guide
+
+To integrate the payment gateway into your own website:
+
+1.  **Include the Script:**
+    ```html
+    <script src="http://localhost:3001/checkout.js"></script>
+    ```
+
+2.  **Initialize Payment:**
+    ```javascript
+    const payment = new PaymentGateway({
+      key: 'key_test_abc123', // Your Public API Key
+      order_id: 'order_123',  // Order ID from your backend
+      amount: 50000,          // Amount in paise
+      currency: 'INR',
+      name: 'Acme Corp',
+      description: 'Test Transaction',
+      image: 'https://placehold.co/100',
+      prefill: {
+        email: 'user@example.com',
+        contact: '9999999999'
+      },
+      handler: function(response) {
+        alert("Payment Success: " + response.payment_id);
+      },
+      modal: {
+        ondismiss: function() {
+            console.log("Checkout closed");
+        }
+      }
+    });
+
+    payment.open();
+    ```
+
+---
+
+## 🔔 Webhook Integration Guide
+
+The gateway sends webhooks for `payment.success`, `payment.failed`, and `refund.processed`.
+
+### Verifying Signatures (Security)
+Every request includes an `x-webhook-signature` header. You **must** verify it to ensure the request is from us.
+
+**Node.js Example:**
+```javascript
+const crypto = require('crypto');
+
+const secret = 'whsec_test_abc123'; // From your Dashboard
+const signature = req.headers['x-webhook-signature'];
+const body = JSON.stringify(req.body);
+
+const expectedSignature = crypto
+  .createHmac('sha256', secret)
+  .update(body)
+  .digest('hex');
+
+if (signature === expectedSignature) {
+  console.log("✅ Verified Webhook");
+} else {
+  console.log("❌ Invalid Signature");
+}
+```
+
+### Retry Logic
+If your server responds with anything other than `200 OK`, we will retry:
+*   Attempt 1: Immediate
+*   Attempt 2: +1 minute
+*   Attempt 3: +5 minutes
+*   Attempt 4: +30 minutes
+*   Attempt 5: +2 hours
+
+---
+
 ## 📸 Screenshots
 
 ### Merchant Dashboard
